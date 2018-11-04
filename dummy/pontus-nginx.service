@@ -1,0 +1,13 @@
+[Unit]
+Description=Pontus Nginx
+After=network.target 
+
+[Service]
+Type=forking
+ExecStart=/opt/pontus/pontus-nginx/current/sbin/nginx -c /opt/pontus/pontus-nginx/current/conf/nginx.conf
+PIDFile=/opt/pontus/pontus-nginx/current/nginx.pid
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+

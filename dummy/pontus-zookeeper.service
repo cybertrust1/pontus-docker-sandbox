@@ -1,0 +1,17 @@
+[Unit]
+Description=Pontus zookeeper (extract/track)
+After=samba.service
+Requires=samba.service
+
+[Service]
+Type=simple
+User=pontus
+WorkingDirectory=/opt/pontus/pontus-hbase/current
+ExecStart=/opt/pontus/pontus-hbase/current/start-zookeeper.sh
+#ExecStartPost=-/bin/bash -c 'while [[ $(echo -e "list" | /bin/env JAVA_HOME=/etc/alternatives/jre  /opt/pontus/pontus-hbase/current/bin/hbase shell 2>&1 | grep -c "ERROR:") != "0" ]]; do sleep 0.2; done'
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

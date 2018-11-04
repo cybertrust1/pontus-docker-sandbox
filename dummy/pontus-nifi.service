@@ -1,0 +1,14 @@
+[Unit]
+Description=Pontus Nifi (extract)
+After=pontus-graph-nifi.service
+Requires=pontus-graph-nifi.service
+
+[Service]
+Type=simple
+User=pontus
+WorkingDirectory=/opt/pontus/pontus-nifi/current
+ExecStart=/bin/env JAVA_HOME=/etc/alternatives/jre /opt/pontus/pontus-nifi/current/bin/nifi.sh run
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

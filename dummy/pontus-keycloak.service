@@ -1,0 +1,13 @@
+[Unit]
+Description=Pontus Keycloak (Comply)
+After=network.target
+
+[Service]
+Type=simple
+User=pontus
+WorkingDirectory=/opt/pontus/pontus-keycloak/current
+ExecStart=/opt/pontus/pontus-keycloak/current/bin/standalone.sh
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

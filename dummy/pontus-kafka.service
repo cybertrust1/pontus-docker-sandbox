@@ -1,0 +1,18 @@
+[Unit]
+Description=Pontus Kafka (track)
+After=pontus-zookeeper.service
+Requires=pontus-zookeeper.service
+
+[Service]
+Type=simple
+User=pontus
+WorkingDirectory=/opt/pontus/pontus-kafka/current
+ExecStart=/opt/pontus/pontus-kafka/current/start-kafka.sh
+#ExecStartPost=-/bin/bash -c 'while [[ $(echo -e "list" | /bin/env JAVA_HOME=/etc/alternatives/jre  /opt/pontus/pontus-hbase/current/bin/hbase shell 2>&1 | grep -c "ERROR:") != "0" ]]; do sleep 0.2; done'
+
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,31 @@
+FROM centos/systemd
+MAINTAINER Leo Martins lmartins@pontusnetworks.com
+ARG home=/root
+ENV container docker
+
+ENV TERM=xterm-color
+RUN  yum -y install epel-release && yum -y update  && yum clean all && rm -rf /var/cache/yum
+RUN  yum -y install java
+RUN  yum -y install mongodb mongodb-server
+
+
+COPY pontus-elastic.service     pontus-graph.service  pontus-hbase-master.service        pontus-hbase-region.service  pontus-kafka.service     pontus-nifi.service       samba.service pontus-graph-nifi.service   pontus-keycloak.service  pontus-nginx.service  pontus-zookeeper.service /etc/systemd/system/
+
+RUN useradd -ms /bin/bash pontus 
+
+#    systemctl enable samba  && \
+#    systemctl enable pontus-hbase-master.service  && \
+#    systemctl enable pontus-hbase-region.service  && \
+#    systemctl enable pontus-zookeeper.service  && \
+#    systemctl enable pontus-elastic.service  && \
+#    systemctl enable pontus-graph.service  && \
+#    systemctl enable pontus-graph-nifi.service  && \
+#    systemctl enable pontus-nifi.service  && \
+#    systemctl enable pontus-gui.service  && \
+#    systemctl enable pontus-keycloak.service  && \
+#    systemctl enable pontus-nginx.service 
+#
+EXPOSE 8443 5005-5010
+VOLUME [ "/sys/fs/cgroup" ]
+CMD ["/usr/sbin/init"]
+

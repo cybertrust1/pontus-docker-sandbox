@@ -1,0 +1,18 @@
+[Unit]
+Description=Pontus Hbase Master (track)
+After=pontus-zookeeper.service
+Requires=pontus-zookeeper.service
+
+[Service]
+Type=simple
+User=pontus
+WorkingDirectory=/opt/pontus/pontus-hbase/current
+ExecStart=/opt/pontus/pontus-hbase/current/start-master.sh
+#ExecStartPost=-/bin/bash -c 'kinit -kt /etc/security/keytabs/hbase.service.keytab hbase/`hostname -f` && while [[ $(echo -e "list" | /bin/env JAVA_HOME=/etc/alternatives/jre  /opt/pontus/pontus-hbase/current/bin/hbase shell 2>&1 | grep -c "ERROR:") != "0" ]]; do sleep 0.2; done'
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target
+

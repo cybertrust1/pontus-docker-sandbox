@@ -1,0 +1,14 @@
+[Unit]
+Description=Pontus GUI (comply)
+After=pontus-graph.service
+Requires=pontus-graph.service
+
+[Service]
+Type=simple
+User=pontus
+WorkingDirectory=/opt/pontus/pontus-gui/current
+ExecStart=/opt/pontus/pontus-gui/current/bin/run-gui.sh
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

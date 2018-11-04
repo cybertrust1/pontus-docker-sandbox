@@ -1,0 +1,13 @@
+[Unit]
+Description=Pontus Elastic Search (track)
+After=network.target
+
+[Service]
+Type=simple
+User=pontus
+WorkingDirectory=/opt/pontus/pontus-elasticsearch/current
+ExecStart=/opt/pontus/pontus-elasticsearch/current/bin/elasticsearch 
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=Pontus all
+
+[Service]
+Type=oneshot
+ExecStart=/run.sh
+ExecStop=/stop.sh
+
+
+RemainAfterExit=true
+User=root
+WorkingDirectory=/
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,17 @@
+[Unit]
+Description=Pontus Graph (track)
+After=pontus-graph-nifi.service
+Requires=pontus-graph-nifi.service
+
+[Service]
+Type=simple
+User=pontus
+WorkingDirectory=/opt/pontus/pontus-graph/current
+ExecStart=/opt/pontus/pontus-graph/current/bin/pv-gdpr-graphdb.sh
+ExecStartPost=-/bin/bash -c 'while [[ $( curl -s  -H "Content-Type: application/json" -X POST -d "" http://localhost:3001/home/vertex_labels ) != *"labels"* ]] ; do sleep 0.2; done'
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

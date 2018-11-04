@@ -1,0 +1,168 @@
+---
+
+- hosts: 127.0.0.1
+  vars:
+  - tls_home: /tmp/tls
+  - tls_rootca_passphrase: pa55word
+  - privkey_passphrase: pa55word
+  - truststore_pass: changeit
+  - truststore_type: JKS
+  tasks: 
+
+
+  - file:
+      name: "{{ item }}"
+      state: absent
+      force: true
+    with_items:
+      - "{{ tls_home }}/private"
+      - "{{ tls_home }}/java"
+
+  - file:
+      name: "{{ item }}"
+      state: directory
+    with_items:
+      - "{{ tls_home }}/private"
+      - "{{ tls_home }}/java"
+
+  - copy:
+      content: |
+        [root_ca]
+        basicConstraints = critical,CA:TRUE,pathlen:1
+        keyUsage = critical, nonRepudiation, cRLSign, keyCertSign
+        subjectKeyIdentifier=hash
+      dest: "{{ tls_home }}/private/root-ca.cnf"
+    with_items:
+      - 127.0.0.1
+
+  - shell: openssl genrsa -out "{{ tls_home }}/private/root-ca.pem" 4096 -passin "pass:{{ tls_rootca_passphrase }}"
+
+  - shell: openssl req -new -key "{{ tls_home }}/private/root-ca.pem" -out "{{ tls_home }}/private/root-ca.csr" -sha256 -subj '/C=UK/ST=London/L=London/O=PontusVision/OU=GDPR/CN=CA'
+
+  - shell: openssl x509 -req  -days 3650  -in "{{ tls_home }}/private/root-ca.csr" -signkey "{{ tls_home }}/private/root-ca.pem" -sha256 -out "{{ tls_home }}/private/root-ca.crt" -extfile "{{ tls_home }}/private/root-ca.cnf" -extensions root_ca
+
+  - file:
+      path: "{{ tls_home }}/java/truststore.jks"
+      state: absent
+
+  - shell: keytool -keystore "{{ tls_home }}/java/truststore.jks" -alias CARoot -import -file "{{ tls_home }}/private/root-ca.crt" -storetype "{{ truststore_type }}" -storepass "{{ truststore_pass }}" -noprompt
+
+#
+#  - openssl_privatekey:
+#      path: "{{ tls_home }}/private/root-ca.pem"
+#      size:  4096 
+#      cipher: aes256
+#      passphrase: "{{ tls_rootca_passphrase }}"
+#
+##- name: Create CSR
+#  #shell: openssl req -new -key "{{ tls_home }}/private/root-ca.pem" -out "{{ tls_home }}/private/root-ca.csr" -sha256 -subj '/C=UK/ST=London/L=London/O=PontusVision/OU=GDPR/CN=root-ca'
+#
+#  - openssl_csr:
+#      state: present
+#      path: "{{ tls_home }}/private/root-ca.csr"
+#      privatekey_path: "{{ tls_home }}/private/root-ca.pem"
+#      privatekey_passphrase: "{{ tls_rootca_passphrase }}"
+#      commonName: root-ca
+#      countryName: UK
+#      digest: sha256
+#      keyUsage: 
+#        - nonRepudiation
+#        - cRLSign
+#        - keyCertSign
+#      keyUsage_critical: true
+#      localityName: London
+#      organizationName: PontusVision
+#      organizationalUnitName: GDPR
+#      stateOrProvinceName: London
+#
+#
+##- name: Sign Root CA
+##  shell: openssl x509 -req  -days 3650  -in "{{ tls_home }}/private/root-ca.csr" -signkey "{{ tls_home }}/private/root-ca.pem" -sha256 -out "{{ tls_home }}/private/root-ca.crt" -extfile "{{ tls_home }}/private/root-ca.cnf" -extensions root_ca
+#
+#  - openssl_certificate:
+#      state: present
+#      path: "{{ tls_home }}/private/root-ca.crt"
+#      privatekey_path: "{{ tls_home }}/private/root-ca.pem"
+#      privatekey_passphrase: "{{ tls_rootca_passphrase }}"
+#      csr_path: "{{ tls_home }}/private/root-ca.csr"
+#      provider: selfsigned
+#      not_after: 20281221162800Z
+#      selfsigned_digest: sha256
+#  
+#  - file:
+#      path: "{{ tls_home }}/java/truststore.jks"
+#      state: absent
+#
+#  - shell: "openssl x509 -outform der -in {{ tls_home }}/private/root-ca.crt -out {{ tls_home }}/private/root-ca.crt.der"
+#
+#  - shell: keytool -import -keystore "{{ tls_home }}/java/truststore.jks" -alias root-ca -file "{{ tls_home }}/private/root-ca.crt.der" -storetype "{{ truststore_type }}" -storepass "{{ truststore_pass }}" -noprompt -trustcacerts 
+#
+#
+#  - openssl_privatekey:
+#      path: "{{ tls_home }}/private/localhost.pem"
+#      size:  4096 
+#      cipher: aes256
+#      passphrase: "{{ privkey_passphrase }}"
+#
+#  - openssl_csr:
+#    state: present
+#    path: "{{ tls_home }}/private/root-ca.csr"
+#    privatekey_path: "{{ tls_home }}/private/root-ca.pem"
+#    privatekey_passphrase: "{{ tls_rootca_passphrase }}"
+#    common_name: root-ca
+#    country: UK
+#    digest: sha256
+#    key_usage: 
+#      - nonRepudiation
+#      - cRLSign
+#      - keyCertSign
+#    key_usage_critical: true
+#    locality_name: London
+#    organization_name: PontusVision
+#    organization_unit: GDPR
+#    state_or_provice_name: London
+#    state_or_provice_name: London
+#
+
+
+#    subjectAltName = DNS:{{ hostvars[item]['ansible_fqdn'] }}, IP:{{ item }}
+
+  - shell: openssl genrsa -out "{{ tls_home }}/private/localhost.pem" 4096 -passin "pass:{{ privkey_passphrase }}"
+
+  - copy:
+      content: |
+        [server]
+        authorityKeyIdentifier=keyid,issuer
+        basicConstraints = critical,CA:FALSE
+        extendedKeyUsage=serverAuth,clientAuth
+        keyUsage = critical, digitalSignature, keyEncipherment
+        subjectAltName = DNS:localhost, IP:{{ item }}
+        subjectKeyIdentifier=hash
+
+      dest: "{{ tls_home }}/private/localhost.cnf"
+      #dest: "{{ tls_home }}/private/{{ hostvars[item]['ansible_hostname'] }}.cnf"
+    with_items:
+      - 127.0.0.1
+
+
+  - shell: openssl req -new -key "{{ tls_home }}/private/localhost.pem" -out "{{ tls_home }}/private/localhost.csr" -sha256 -subj "/C=UK/ST=London/L=London/O=PontusVision/OU=GDPR/CN=localhost"
+
+  - shell: openssl x509 -req -days 750 -passin "pass:{{ tls_rootca_passphrase }}" -in "{{ tls_home }}/private/localhost.csr" -sha256 -CA "{{ tls_home }}/private/root-ca.crt" -CAkey "{{ tls_home }}/private/root-ca.pem"  -CAcreateserial -out "{{ tls_home }}/private/localhost.crt" -extfile "{{ tls_home }}/private/localhost.cnf" -extensions server
+
+  - file:
+      path: "{{ tls_home }}/private/localhost.p12"
+      state: absent
+
+  - file:
+      path: "{{ tls_home }}/private/localhost.jks"
+      state: absent
+
+  - shell: openssl pkcs12 -export -in "{{ tls_home }}/private/localhost.crt" -inkey "{{ tls_home }}/private/localhost.pem" -out  "{{ tls_home }}/private/localhost.p12" -name "localhost" -password "pass:{{ privkey_passphrase }}"
+
+  - shell: "keytool -importkeystore -srckeystore '{{ tls_home }}/private/localhost.p12' -destkeystore '{{ tls_home }}/private/localhost.jks' -srcstorepass '{{ privkey_passphrase }}' -deststorepass '{{ privkey_passphrase }}'"
+  - shell: "openssl pkcs8 -in {{ tls_home }}/private/localhost.pem -topk8 -nocrypt -out {{ tls_home }}/private/localhost.pem.pk8"
+
+  - shell: "cp {{ tls_home }}/private/* {{ tls_home }}/java/"
+
+  - shell: "cp {{ tls_home }}/java/localhost.jks {{ tls_home }}/java/keystore.jks"
+

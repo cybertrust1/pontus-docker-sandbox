@@ -1,0 +1,23 @@
+FROM pvgdpr/pvgdpr-base
+MAINTAINER Leo Martins lmartins@pontusnetworks.com
+ARG home=/root
+ENV container docker
+
+ENV TERM=xterm-color
+RUN  yum -y update && yum install -y java && yum clean all && rm -rf /var/cache/yum
+
+#COPY pontus-hbase.service pontus-knox.service pontus-gui.service pontus-elastic.service pontus-graph.service pontus-nifi.service /etc/systemd/system/
+
+RUN useradd -ms /bin/bash pontus && \
+    chown -R pontus:pontus /opt/pontus && \
+    systemctl enable pontus-hbase.service  && \
+    systemctl enable pontus-elastic.service  && \
+    systemctl enable pontus-graph.service  && \
+    systemctl enable pontus-nifi.service  && \
+    systemctl enable pontus-gui.service  && \
+    systemctl enable pontus-knox.service 
+
+EXPOSE 8443 5005-5010
+VOLUME [ "/sys/fs/cgroup" ]
+CMD ["/usr/sbin/init"]
+

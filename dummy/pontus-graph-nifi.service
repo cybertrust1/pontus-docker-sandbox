@@ -1,0 +1,19 @@
+[Unit]
+Description=Pontus Graph (track) for nifi
+After=pontus-elastic.service pontus-hbase-region.service
+Requires=pontus-elastic.service pontus-hbase-region.service
+
+[Service]
+Type=simple
+User=pontus
+Environment=GRAPHDB_REST_PORT=3002
+Environment=PONTUS_GDPR_MODE=true
+WorkingDirectory=/opt/pontus/pontus-graph/current
+ExecStart=/opt/pontus/pontus-graph/current/bin/pv-gdpr-graphdb.sh /opt/pontus/pontus-graph/current/conf/gremlin-server-nifi.yml
+ExecStartPost=-/bin/bash -c 'while [[ $( curl -s  -H "Content-Type: application/json" -X POST -d "" http://localhost:3002/home/vertex_labels ) != *"labels"* ]] ; do sleep 0.2; done'
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target
