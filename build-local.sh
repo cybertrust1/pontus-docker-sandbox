@@ -150,7 +150,7 @@ docker commit $CONTAINER_ID pontusvision/open-source-gdpr2:latest
 docker exec -i $CONTAINER_ID  yum -y install npm
 docker commit $CONTAINER_ID pontusvision/open-source-gdpr2:latest
 
-docker tag pontusvision/open-source-gdpr2:latest pontusvisiongdpr/open-source-gdpr2.1:latest
+docker tag pontusvision/open-source-gdpr2:latest pontusvisiongdpr/open-source-gdpr2.2:latest
 
 #docker exec -i $CONTAINER_ID  systemctl start samba 
 #docker exec -i $CONTAINER_ID  systemctl start pontus-elastic 
